@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        /* FORM CARD */
+        .container {
+            background: #ffffff;
+            max-width: 420px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        /* RESULT */
+        .result {
+            margin-top: 20px;
+            padding: 14px;
+            background: #f4f6ff;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .result a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .copy-btn {
+            width: 100%;
+            background: #10b981;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+        }
+
+        .copied {
+            margin-top: 6px;
+            color: #059669;
+            font-size: 13px;
+            display: none;
+            text-align: center;
+        }
+
+        /* TABLE */
+        .table-container {
+            margin: 40px auto 0;
+            max-width: 900px;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .table-container h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9ff;
+        }
+
+        tbody tr:hover {
+            background: #eef1ff;
+        }
+
+        .truncate {
+            max-width: 320px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table-copy {
+            background: #10b981;
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .table-copy:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🔗 URL Shortener</h1>
+
+    <!-- FORM -->
+    <div class="container">
+        <form method="POST" action="/url">
+            <label>Enter Your Original URL</label>
+            <input type="text" name="url" placeholder="https://example.com" required>
+            <button type="submit">Generate Short URL</button>
+        </form>
+
+        <% if (locals.id) { %>
+            <div class="result">
+                Short URL:<br>
+                <a id="generatedUrl" href="http://localhost:8001/url/<%= id %>" target="_blank">
+                    http://localhost:8001/url/<%= id %>
+                </a>
+
+                <button class="copy-btn" onclick="copyGenerated()">📋 Copy URL</button>
+                <div class="copied" id="copiedGenerated">Copied to clipboard!</div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- TABLE -->
+    <% if (locals.urls && urls.length > 0) { %>
+        <div class="table-container">
+            <h2>📊 Generated URLs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Short ID</th>
+                        <th>Redirect URL</th>
+                        <th>Clicks</th>
+                        <th>Copy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% urls.forEach((url, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= url.shortid %></td>
+                            <td class="truncate"><%= url.redirecturl %></td>
+                            <td><%= url.visithistory.length %></td>
+                            <td>
+                                <button class="table-copy"
+                                    onclick="copyFromTable('http://localhost:8001/url/<%= url.shortid %>')">
+                                    Copy
+                                </button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+
+    <script>
+        function copyGenerated() {
+            const text = document.getElementById("generatedUrl").innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                document.getElementById("copiedGenerated").style.display = "block";
+                setTimeout(() => {
+                    document.getElementById("copiedGenerated").style.display = "none";
+                }, 2000);
+            });
+        }
+
+        function copyFromTable(url) {
+            navigator.clipboard.writeText(url);
+            alert("Short URL copied!");
+        }
+    </script>
+
+</body>
+</html>
